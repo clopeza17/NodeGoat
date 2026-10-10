@@ -1,0 +1,45 @@
+name: SonarQube Cloud - UMG
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonar:
+    name: Analisis estatico de NodeGoat
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Descargar codigo e historial
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Analizar con SonarQube Cloud
+        uses: SonarSource/sonarqube-scan-action@v8.3.0
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >-
+            -Dsonar.organization=clopeza17
+            -Dsonar.projectKey=clopeza17_NodeGoat
+            -Dsonar.sources=.
+            -Dsonar.tests=test
+            -Dsonar.exclusions=test/**,node_modules/**,app/assets/vendor/**,artifacts/**,coverage/**
+            -Dsonar.sourceEncoding=UTF-8
+
+      - name: Guardar referencia del analisis
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonar-analysis-reference
+          path: .scannerwork/report-task.txt
+          if-no-files-found: error
+          retention-days: 14
