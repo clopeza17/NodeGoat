@@ -32,5 +32,6 @@ jobs:
         with:
           name: sonar-analysis-reference
           path: .scannerwork/report-task.txt
+          include-hidden-files: true
           if-no-files-found: error
           retention-days: 14
